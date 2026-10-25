@@ -1,0 +1,13 @@
+torch
+torchvision
+torchaudio
+timm
+scikit-learn
+matplotlib
+pandas
+retina-face
+tf-keras
+openai
+tqdm
+scikit-image
+transformers

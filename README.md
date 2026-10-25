@@ -1,2 +1,108 @@
 # GazeCoT
-The official GitHub repo of GazeCoT
+
+This is the official GitHub repo for the CHI'26 paper **GazeCoT: Unleashing Social Intelligence in Multimodal LLMs With Gaze-Informed Chain-of-Thought Reasoning**, in which we explore how gaze target estimation models can enhance MLLMs' ability to understand human attention and intent. More details are available in our paper [ACM DL Link Coming Soon].
+
+## Quickstart
+
+### 1. Setting up the Environment
+
+#### System Requirements
+
+We used a Windows 11 machine for the experiments. We strongly suggest using a Windows or Linux machine for this demo. CUDA is required for running gaze estimation efficiently, so please make sure you have an Nvidia GPU with at least 8GB of VRAM.
+
+#### Python Version
+
+We used Python 3.12.11 for all experiments. You can download it at [[Welcome to Python.org](https://www.python.org/)](https://www.python.org/).
+
+#### PyTorch
+
+You can install the PyTorch version used in our experiments using this pip command:
+
+```
+pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu118
+```
+
+If your system does not support CUDA 11.8 (CUDA version can be checked through the `nvidia-smi` command), you can visit [[PyTorch](https://pytorch.org/?ajs_aid=270112d1-eedb-4a2d-8bdd-0906573d12f4)]() for more information on installing a PyTorch version that fits your system.
+
+#### Other Dependencies
+
+All other dependencies are given in `requirements.txt`. You may install them using the following pip command:
+
+```
+pip install -r requirements.txt
+```
+
+#### Getting DINOv3 for GazeLLE-v3
+
+GazeLLE-v3 uses the DINOv3 general purpose vision backbone. We access it through its official huggingface transformers repository ([DINOv3 - a facebook Collection](https://huggingface.co/collections/facebook/dinov3-68924841bd6b561778e31009)). The versions needed here are [dinov3-vitl16-pretrain-lvd1689m](https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m) for GazeLLE-v3-L and [ dinov3-vith16plus-pretrain-lvd1689m](https://huggingface.co/facebook/dinov3-vith16plus-pretrain-lvd1689m) for GazeLLE-v3-H. You would need to apply for access to each model from Meta by filling a form on the model's Huggingface repo page. Access would usually be granted within minutes.
+
+If there are Internet connection problems with Hugging Face, we provide an alternative way to load DINO weights. Download all model files (see the "Files and versions" tab on the website) and put them in `./dinov3/dinov3_vitl16` and `./dinov3/dinov3_vith16plus`. Expect them to take up around 5GB of storage in total. The resulting file structure should look like this: 
+
+```
+dinov3
+|
+----dinov3_vith16plus
+    |
+    ----config.json
+    |
+    ----gitattributes
+    |
+    ----LICENSE.md
+    |
+    ----model.safetensors    # this is model weight file of DINOv3
+    |
+    ----preprocessor_config  # the image preprocessor settings of DINOv3 are here
+    |
+    ----README.md            # the official README file for DINOv3
+```
+
+**Remember to set the `USE_LOCAL_DINO_WEIGHTS` in settings.py to `True` if you want to use local weights.** 
+
+Since GazeLLE-v3 gaze decoder weights are already in the `./weights/` folder, the gaze estimation part is good to go :)
+
+### 2. Prepare API Credentials
+
+GazeCoT is implemented with MLLM API services provided by OpenAI and Aliyun. You may enter your credentials, such as the API endpoint and API key, in `./settings.py`. You may also modify the model used for the Task Agent and ROI description.
+
+### 3. GazeLLE-v3 Demo
+
+We provide some demo images under `./demo_images/`. Run `./demo_image.py` to see the gaze estimation heatmaps.
+
+### 4. VQA With GazeCoT on Benchmarks
+
+We evaluate GazeCoT on 2 VQA benchmarks - the gaze target recognition benchmark by Zhang et al., and the GSI benchmark we proposed. You can find the images and questions for GSI under the `./benchmarks/` directory. For Zhang et al.'s benchmark, you would need to download it from this link [OSF | stimuli.zip](https://osf.io/kyaeu). Unzip the file and move the `stimuli/` folder to `./benchmarks/gaze_target/`. The correct file structure would look something like this:
+
+```
+benchmarks
+|
+----gaze_target
+    |
+    stimuli_questions.csv
+    |
+    stimuli
+    |
+    ----gaze_0.png
+        |
+        gaze_1.png
+        |
+        gaze_2.png
+        |
+        ...
+        |
+        gaze_906.png
+```
+
+The scripts for benchmark evaluation are `./eval_gaze_target.py` and `./eval_gsi.py`. You can run the VQA process with the following command:
+
+```
+python eval_gaze_target.py
+python eval_gsi.py
+```
+
+You can find a detailed log of the evaluation under the folder `./logs`.
+
+To eliminate repetitive computation, we provide the pre-computed facial bounding boxes and gaze heatmaps under `./gaze_data/`. The bounding boxes are generated using RetinaFace ([serengil/retinaface: RetinaFace: Deep Face Detection Library for Python](https://github.com/serengil/retinaface)). The heatmaps are generated by GazeLLE-v3-H. The pre-computed values are used by default - just run the scripts and they will be used.
+
+## Credits
+
+The gaze target estimation part of our work is based on GazeLLE ([fkryan/gazelle: Gaze-LLE: Gaze Target Estimation via Large-Scale Learned Encoders (CVPR 2025, Highlight)](https://github.com/fkryan/gazelle)), a great piece of work by Ryan et al. We deeply appreciate how they open-sourced GazeLLE and made it available to the whole community.
